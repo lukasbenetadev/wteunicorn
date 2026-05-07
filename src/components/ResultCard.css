@@ -62,11 +62,30 @@
   margin-bottom: 10px;
 }
 
+.rcard-desc {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.rcard-why {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand);
+  letter-spacing: 0.02em;
+  margin-bottom: 12px;
+  padding: 5px 10px;
+  background: rgba(255,122,26,0.07);
+  border-radius: 6px;
+  display: inline-block;
+}
+
 .rcard-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 .rcard-tag {
   padding: 4px 12px;
@@ -80,14 +99,60 @@
   color: var(--brand);
 }
 
-/* ── Action buttons ── */
+/* ── Intent buttons (primary CTAs) ── */
+.rcard-intents {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rc-btn--order {
+  flex: 1;
+  padding: 13px 12px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--brand);
+  background: var(--brand);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  transition: all 0.17s ease;
+  letter-spacing: 0.01em;
+}
+.rc-btn--order:hover {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255,122,26,0.3);
+}
+
+.rc-btn--cook {
+  flex: 1;
+  padding: 13px 12px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--border-2, #e2d9d0);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  transition: all 0.17s ease;
+  letter-spacing: 0.01em;
+}
+.rc-btn--cook:hover {
+  background: var(--bg-raised);
+  border-color: var(--border-2);
+  color: var(--text);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ── Secondary action buttons ── */
 .rcard-actions {
   display: flex;
   gap: 8px;
 }
 .rc-btn {
   flex: 1;
-  padding: 11px 12px;
+  padding: 10px 12px;
   border-radius: var(--r-sm);
   border: 1.5px solid var(--border);
   background: transparent;
@@ -97,7 +162,6 @@
   transition: all 0.17s ease;
   letter-spacing: 0.02em;
 }
-.rc-btn:last-child { flex: 0 0 46px; padding: 11px; }
 
 .rc-btn:hover {
   background: var(--bg-raised);
@@ -122,7 +186,19 @@
   background: rgba(255,122,26,0.1);
 }
 
+.rc-btn--share {
+  border-color: var(--border);
+  color: var(--text-2);
+}
+.rc-btn--share:hover {
+  border-color: var(--brand-dim);
+  color: var(--brand);
+  background: rgba(255,122,26,0.05);
+}
+
 .rc-btn--again {
+  flex: 0 0 auto;
+  padding: 10px 14px;
   border-color: var(--border);
   color: var(--text-2);
 }

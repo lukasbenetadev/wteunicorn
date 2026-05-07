@@ -1,20 +1,18 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 
-import { FOODS, MOODS }    from './data'
-import { useFoodImage }    from './hooks/useFoodImage'
-import DiceRoller          from './components/DiceRoller'
-import ResultCard          from './components/ResultCard'
-import NearbySection       from './components/NearbySection'
-import FilterBar           from './components/FilterBar'
-import Favorites           from './components/Favorites'
-import Confetti            from './components/Confetti'
+import { FOODS, MOODS }          from './data'
+import { analytics }             from './analytics'
+import { useFoodImage }          from './hooks/useFoodImage'
+import { useMealHistory }        from './hooks/useMealHistory'
+import DiceRoller                from './components/DiceRoller'
+import ResultCard                from './components/ResultCard'
+import NearbySection             from './components/NearbySection'
+import FilterBar                 from './components/FilterBar'
+import Favorites                 from './components/Favorites'
+import Confetti                  from './components/Confetti'
 import './App.css'
 
-// constants
-
 const INDIVIDUAL_MOOD_IDS = MOODS.filter(m => m.id !== 'all').map(m => m.id)
-
-// tiny hook
 
 function useLocalStorage(key, initial) {
   const [value, setValue] = useState(() => {
@@ -28,16 +26,23 @@ function useLocalStorage(key, initial) {
   return [value, set]
 }
 
-// App
-
 export default function App() {
-  const [moods,       setMoods]       = useState(new Set())   // empty = All
+  const [moods,       setMoods]       = useState(new Set())
   const [excluded,    setExcluded]    = useState(new Set())
   const [currentFood, setCurrentFood] = useState(null)
   const [confettiKey, setConfettiKey] = useState(0)
   const [favorites,   setFavorites]   = useLocalStorage('wte_favorites', [])
+  const { addToHistory }              = useMealHistory()
 
   const { imageUrl } = useFoodImage(currentFood)
+
+  // fire page_view once on mount
+  useEffect(() => { analytics.pageView() }, [])
+
+  const activeFilters = useMemo(() => ({
+    moods:    [...moods],
+    excluded: [...excluded],
+  }), [moods, excluded])
 
   const filteredFoods = useMemo(() => FOODS.filter(f => {
     if (f.tags.some(t => excluded.has(t)))                      return false
@@ -45,34 +50,51 @@ export default function App() {
     return true
   }), [moods, excluded])
 
-  // auto-resets to All when every individual mood is checked
   const toggleMood = useCallback(id => {
-    if (id === 'all') { setMoods(new Set()); return }
+    if (id === 'all') { setMoods(new Set()); analytics.filterApplied('mood', 'all', true); return }
     setMoods(prev => {
       const next = new Set(prev)
+      const adding = !next.has(id)
       next.has(id) ? next.delete(id) : next.add(id)
-      if (INDIVIDUAL_MOOD_IDS.every(m => next.has(m))) return new Set()
+      if (INDIVIDUAL_MOOD_IDS.every(m => next.has(m))) { analytics.filterApplied('mood', id, false); return new Set() }
+      analytics.filterApplied('mood', id, adding)
       return next
     })
   }, [])
 
   const toggleExclude = useCallback(tag => {
     setExcluded(prev => {
-      const next = new Set(prev)
+      const next   = new Set(prev)
+      const adding = !next.has(tag)
       next.has(tag) ? next.delete(tag) : next.add(tag)
+      analytics.filterApplied('exclude', tag, adding)
       return next
     })
   }, [])
 
   const handleReveal = useCallback(food => {
     setCurrentFood(food)
-    if (food) setConfettiKey(k => k + 1)
-  }, [])
+    if (food) {
+      setConfettiKey(k => k + 1)
+      addToHistory(food)
+      analytics.resultShown(food, activeFilters)
+    }
+  }, [activeFilters, addToHistory])
+
+  const handleRoll = useCallback(() => {
+    analytics.rollClicked(activeFilters)
+  }, [activeFilters])
+
+  const handleAgain = useCallback(() => {
+    analytics.rerollClicked(activeFilters)
+    setCurrentFood(null)
+  }, [activeFilters])
 
   const isFaved = currentFood ? favorites.some(f => f.id === currentFood.id) : false
 
   const toggleFav = useCallback(() => {
     if (!currentFood) return
+    analytics.saveClicked(currentFood, !isFaved)
     setFavorites(isFaved
       ? favorites.filter(f => f.id !== currentFood.id)
       : [...favorites, { id: currentFood.id, name: currentFood.name, emoji: currentFood.emoji }]
@@ -82,6 +104,18 @@ export default function App() {
   const removeFav = useCallback(id =>
     setFavorites(favorites.filter(f => f.id !== id))
   , [favorites, setFavorites])
+
+  const handleOrder = useCallback(() => {
+    if (currentFood) analytics.deliveryIntentClicked(currentFood)
+  }, [currentFood])
+
+  const handleCook = useCallback(() => {
+    if (currentFood) analytics.cookIntentClicked(currentFood)
+  }, [currentFood])
+
+  const handleShare = useCallback(() => {
+    if (currentFood) analytics.shareClicked(currentFood)
+  }, [currentFood])
 
   return (
     <div className="app">
@@ -121,7 +155,6 @@ export default function App() {
         {/* Main content */}
         <div className="app-content">
 
-          {/* Hero — sits above the stage / card */}
           <section className="hero">
             <h1 className="hero-h1">
               Not sure what<br />to eat <em>today?</em>
@@ -129,16 +162,11 @@ export default function App() {
             <p className="hero-sub">Tap the stage and let us pick a dish for you.</p>
           </section>
 
-          {/*
-            Stage and result card are mutually exclusive:
-            • No food yet  → show the dice roller (idle or rolling)
-            • Food revealed → hide the roller, show the result card
-            • "Again" in ResultCard resets currentFood → roller reappears in idle state
-          */}
           {!currentFood ? (
             <DiceRoller
               filteredFoods={filteredFoods}
               onReveal={handleReveal}
+              onRoll={handleRoll}
             />
           ) : (
             <>
@@ -148,14 +176,17 @@ export default function App() {
                   imageUrl={imageUrl}
                   isFaved={isFaved}
                   onFav={toggleFav}
-                  onAgain={() => setCurrentFood(null)}
+                  onAgain={handleAgain}
+                  onOrder={handleOrder}
+                  onCook={handleCook}
+                  onShare={handleShare}
+                  activeMoods={moods}
                 />
               </div>
               <NearbySection food={currentFood} />
             </>
           )}
 
-          {/* Favourites — shown at the bottom on mobile only */}
           {favorites.length > 0 && (
             <div className="mobile-favorites">
               <div className="divider" />
