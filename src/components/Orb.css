@@ -1,0 +1,310 @@
+/* roller wrapper */
+.roller-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* theater stage */
+.stage {
+  position: relative;
+  width: 380px;
+  height: 300px;
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255,209,102,0.18) 0%, transparent 60%),
+    #FFFFFF;
+  border: 1.5px solid var(--border);
+  box-shadow:
+    0 4px 32px rgba(0,0,0,0.07),
+    0 1px 4px rgba(0,0,0,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.3s ease;
+}
+
+.stage--clickable {
+  cursor: pointer;
+}
+.stage--clickable:hover {
+  box-shadow:
+    0 8px 48px rgba(255,122,26,0.18),
+    0 2px 8px rgba(0,0,0,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.stage--clickable:active { transform: scale(0.99); }
+
+
+/* curtains */
+.curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 52%;
+  z-index: 20;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fabric texture via gradients */
+.curtain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.06) 0px,
+      rgba(0,0,0,0.07) 6px,
+      rgba(255,255,255,0.04) 12px,
+      rgba(0,0,0,0.05) 18px,
+      rgba(255,255,255,0.07) 24px
+    );
+}
+
+/* Fabric sheen */
+.curtain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.12) 0%,
+    rgba(0,0,0,0.05) 30%,
+    rgba(255,255,255,0.08) 60%,
+    rgba(0,0,0,0.1) 100%
+  );
+}
+
+.curtain--left {
+  left: 0;
+  background: linear-gradient(to right, #7B1316 0%, #B03030 40%, #C0392B 100%);
+  transform: translateX(-105%);
+  border-radius: 0 0 0 24px;
+  box-shadow: inset -4px 0 12px rgba(0,0,0,0.2);
+}
+.curtain--right {
+  right: 0;
+  background: linear-gradient(to left, #7B1316 0%, #B03030 40%, #C0392B 100%);
+  transform: translateX(105%);
+  border-radius: 0 0 24px 0;
+  box-shadow: inset 4px 0 12px rgba(0,0,0,0.2);
+}
+
+.curtain--left.curtain--in  { transform: translateX(0); }
+.curtain--right.curtain--in { transform: translateX(0); }
+
+/* idle state */
+.stage-idle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+}
+
+.stage-idle-label {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--brand);
+}
+.stage-idle-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+
+/* 3-D dice */
+.dice-scene {
+  perspective: 640px;
+  perspective-origin: 50% 42%;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dice {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* Idle: gentle float */
+.dice--idle {
+  transform: rotateX(-18deg) rotateY(28deg);
+  animation: diceFloat 3.5s ease-in-out infinite;
+}
+@keyframes diceFloat {
+  0%,100% { transform: rotateX(-18deg) rotateY(28deg) translateY(0px); }
+  50%     { transform: rotateX(-14deg) rotateY(36deg) translateY(-6px); }
+}
+
+/* Rolling: rapid spin ending on front face (75*360 = 27000, but simpler: end at multiples of 360) */
+.dice--rolling {
+  animation: diceRoll 2.3s cubic-bezier(0.12, 0, 0.08, 1) forwards;
+}
+@keyframes diceRoll {
+  0%   { transform: rotateX(-18deg) rotateY(28deg)   translateY(0px);  }
+  12%  { transform: rotateX(130deg) rotateY(160deg)  translateY(-22px); }
+  28%  { transform: rotateX(310deg) rotateY(400deg)  translateY(-32px); }
+  46%  { transform: rotateX(530deg) rotateY(670deg)  translateY(-18px); }
+  62%  { transform: rotateX(660deg) rotateY(860deg)  translateY(-8px);  }
+  78%  { transform: rotateX(710deg) rotateY(1000deg) translateY(-3px);  }
+  90%  { transform: rotateX(718deg) rotateY(1068deg) translateY(-1px);  }
+  100% { transform: rotateX(720deg) rotateY(1080deg) translateY(0px);   }
+}
+/* 720 = 2×360, 1080 = 3×360  →  front face (index 0 = winner) faces viewer */
+
+/* Dice faces — half of 150px = 75px */
+.face {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  border-radius: 22px;
+  background: #FFFFFF;
+  border: 2px solid rgba(242, 216, 189, 0.9);
+  box-shadow:
+    inset 0 2px 8px rgba(255,122,26,0.06),
+    inset 0 -2px 4px rgba(0,0,0,0.04);
+  backface-visibility: visible;
+}
+
+.face--front  { transform: translateZ(75px); }
+.face--back   { transform: rotateY(180deg) translateZ(75px); }
+.face--right  { transform: rotateY( 90deg) translateZ(75px); }
+.face--left   { transform: rotateY(-90deg) translateZ(75px); }
+.face--top    { transform: rotateX( 90deg) translateZ(75px); }
+.face--bottom { transform: rotateX(-90deg) translateZ(75px); }
+
+/* rolling state */
+.stage-rolling {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* reveal state */
+.stage-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: scale(0.78) translateY(10px);
+  transition:
+    opacity  0.5s 0.15s ease,
+    transform 0.5s 0.15s cubic-bezier(0.34, 1.4, 0.64, 1);
+  pointer-events: none;
+}
+.stage-reveal--in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.stage-reveal-emoji {
+  font-size: 72px;
+  line-height: 1;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.12));
+  animation: emojiBounce 0.5s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes emojiBounce {
+  from { transform: scale(0.5) rotate(-8deg); }
+  to   { transform: scale(1)   rotate(0deg); }
+}
+
+.stage-reveal-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.stage-reveal-name {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+/* footer controls */
+.roller-footer {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roller-hint {
+  font-size: 12px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+
+.roll-again-btn {
+  padding: 11px 28px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border-2);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.roll-again-btn:hover {
+  border-color: var(--brand-dim);
+  color: var(--brand);
+  background: rgba(255,122,26,0.05);
+  transform: translateY(-1px);
+}
+
+/* Loading dots */
+.roller-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.roller-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+  opacity: 0.3;
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+.roller-dots span:nth-child(1) { animation-delay: 0s; }
+.roller-dots span:nth-child(2) { animation-delay: 0.2s; }
+.roller-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse {
+  0%,80%,100% { opacity: 0.2; transform: scale(0.8); }
+  40%         { opacity: 1;   transform: scale(1.2); }
+}
+
+/* responsive */
+@media (max-width: 860px) {
+  .stage { width: 320px; height: 260px; }
+  .face  { width: 130px; height: 130px; font-size: 52px; border-radius: 18px; }
+  .dice  { width: 130px; height: 130px; }
+  .face--front  { transform: translateZ(65px); }
+  .face--back   { transform: rotateY(180deg) translateZ(65px); }
+  .face--right  { transform: rotateY( 90deg) translateZ(65px); }
+  .face--left   { transform: rotateY(-90deg) translateZ(65px); }
+  .face--top    { transform: rotateX( 90deg) translateZ(65px); }
+  .face--bottom { transform: rotateX(-90deg) translateZ(65px); }
+  .dice-scene   { width: 130px; height: 130px; }
+  .stage-reveal-emoji { font-size: 58px; }
+  .stage-reveal-name  { font-size: 22px; }
+}

@@ -1,0 +1,50 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  /* Backgrounds */
+  --bg:        #FFF8EF;
+  --bg-raised: #FFF2E4;
+
+  /* Surfaces */
+  --surface:   #FFFFFF;
+  --surface-2: #FFF5E8;
+
+  /* Borders */
+  --border:    #F2D8BD;
+  --border-2:  #EEC99E;
+
+  /* Brand — warm orange */
+  --brand:        #FF7A1A;
+  --brand-dark:   #E85F00;
+  --brand-dim:    rgba(255, 122, 26, 0.18);
+  --brand-glow:   rgba(255, 122, 26, 0.35);
+  --brand-light:  #FF9A4D;
+
+  /* Accents */
+  --yellow:    #FFD166;
+  --green:     #2FBF71;
+  --green-dim: rgba(47, 191, 113, 0.14);
+
+  /* Text */
+  --text:   #1F1F1F;
+  --text-2: #6F6A63;
+  --text-3: #B0A99E;
+
+  /* Spacing / radius */
+  --r:    16px;
+  --r-sm: 10px;
+  --r-lg: 24px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button { font-family: inherit; cursor: pointer; }

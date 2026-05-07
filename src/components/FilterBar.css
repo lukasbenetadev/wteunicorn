@@ -1,0 +1,143 @@
+/* Two columns: Vibe | Skip */
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+
+.filter-group { display: flex; flex-direction: column; }
+
+.filter-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 0 10px;
+  margin-bottom: 8px;
+}
+
+.filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* ── Row item — fixed layout so selection never shifts size ── */
+.frow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  /* Keep weight constant — no reflow on select */
+  font-weight: 500;
+  color: var(--text-2);
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.13s, color 0.13s;
+}
+.frow:hover {
+  background: rgba(255, 122, 26, 0.07);
+  color: var(--text);
+}
+
+.frow-emoji {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.frow-text {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Icon slots — always in DOM, opacity controls visibility so width is always reserved */
+.frow-check {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand);
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+  transition: opacity 0.15s;
+}
+.frow-x {
+  font-size: 10px;
+  font-weight: 700;
+  color: #C53030;
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+  transition: opacity 0.15s;
+}
+
+/* ── Active mood — only color + bg, no size change ── */
+.frow--active {
+  background: rgba(255, 122, 26, 0.09);
+  color: var(--brand);
+}
+.frow--active:hover { background: rgba(255, 122, 26, 0.13); }
+
+/* ── Excluded ── */
+.frow--excluded {
+  background: rgba(197, 48, 48, 0.06);
+  color: #C53030;
+}
+.frow--excluded .frow-text {
+  text-decoration: line-through;
+  text-decoration-color: rgba(197, 48, 48, 0.4);
+}
+.frow--excluded:hover { background: rgba(197, 48, 48, 0.1); }
+
+/* mobile — single col, pills */
+@media (max-width: 860px) {
+  .filter-bar   { grid-template-columns: 1fr; gap: 20px; }
+  .filter-label { padding: 0 2px; }
+  .filter-list  { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+
+  .frow {
+    width: auto;
+    padding: 7px 14px;
+    border-radius: 100px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-size: 12px;
+    color: var(--text-2);
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .frow:hover { border-color: var(--brand-dim); color: var(--brand); background: rgba(255,122,26,0.04); }
+
+  .frow--active {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+    box-shadow: 0 3px 10px rgba(255,122,26,0.28);
+  }
+  .frow--active:hover { background: var(--brand-dark); }
+  .frow--active .frow-check { color: rgba(255,255,255,0.9); }
+
+  .frow--excluded {
+    border-color: rgba(197,48,48,0.35);
+    color: #C53030;
+    background: rgba(197,48,48,0.05);
+    box-shadow: none;
+  }
+  .frow--excluded .frow-text { text-decoration: none; }
+
+  /* Hide icon slots in pill mode — no space needed */
+  .frow-check,
+  .frow-x { display: none; }
+  .frow-emoji { width: auto; }
+}
