@@ -5,7 +5,7 @@ import './DiceRoller.css'
 
 const IDLE_EMOJIS = ['🍔', '🍕', '🌮', '🍣', '🍜', '🥙']
 
-export default function DiceRoller({ filteredFoods, onReveal }) {
+export default function DiceRoller({ filteredFoods, onReveal, onRoll }) {
   const [phase,      setPhase]      = useState('idle')
   const [winner,     setWinner]     = useState(null)
   const [curtainsIn, setCurtainsIn] = useState(false)
@@ -62,6 +62,7 @@ export default function DiceRoller({ filteredFoods, onReveal }) {
 
     const w = filteredFoods[Math.floor(Math.random() * filteredFoods.length)]
 
+    onRoll?.()
     setWinner(w)
     setCurtainsIn(false)
     setPhase('rolling')
