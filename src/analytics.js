@@ -1,17 +1,27 @@
+import posthog from 'posthog-js'
+
 const SESSION_KEY = 'wte_session'
 const EVENTS_KEY  = 'wte_events'
 const MAX_EVENTS  = 300
+
+// initialise PostHog once
+posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
+  api_host:              import.meta.env.VITE_POSTHOG_HOST ?? 'https://eu.i.posthog.com',
+  capture_pageview:      false,   // we fire page_view manually
+  capture_pageleave:     true,
+  persistence:           'localStorage',
+})
 
 function getSession() {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY)
     if (raw) return JSON.parse(raw)
     const session = {
-      id:       crypto.randomUUID(),
-      start:    Date.now(),
-      rolls:    0,
-      rerolls:  0,
-      isNew:    !localStorage.getItem('wte_returning'),
+      id:    crypto.randomUUID(),
+      start: Date.now(),
+      rolls:   0,
+      rerolls: 0,
+      isNew: !localStorage.getItem('wte_returning'),
     }
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
     localStorage.setItem('wte_returning', '1')
@@ -43,6 +53,10 @@ function push(event, props = {}) {
     console.log('%c[analytics]', 'color:#ff7a1a;font-weight:700', payload)
   }
 
+  // send to PostHog
+  posthog.capture(event, payload)
+
+  // also keep local copy
   try {
     const stored = JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]')
     stored.push(payload)
@@ -106,7 +120,6 @@ export const analytics = {
     push('location_permission_denied')
   },
 
-  // returns all stored events — useful for debugging or future batch-send
   dump() {
     try { return JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]') }
     catch { return [] }
