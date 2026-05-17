@@ -1,16 +1,18 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, lazy, Suspense } from 'react'
 
 import { FOODS, MOODS }          from './data'
 import { analytics }             from './analytics'
 import { useFoodImage }          from './hooks/useFoodImage'
 import { useMealHistory }        from './hooks/useMealHistory'
-import DiceRoller                from './components/DiceRoller'
+import { useStreak }             from './hooks/useStreak'
 import ResultCard                from './components/ResultCard'
 import NearbySection             from './components/NearbySection'
 import FilterBar                 from './components/FilterBar'
 import Favorites                 from './components/Favorites'
 import Confetti                  from './components/Confetti'
 import './App.css'
+
+const DiceRoller = lazy(() => import('./components/DiceRoller'))
 
 const INDIVIDUAL_MOOD_IDS = MOODS.filter(m => m.id !== 'all').map(m => m.id)
 
@@ -33,7 +35,14 @@ export default function App() {
   const [confettiKey,     setConfettiKey]     = useState(0)
   const [showFilters,     setShowFilters]     = useState(false)
   const [favorites,   setFavorites]   = useLocalStorage('wte_favorites', [])
-  const { addToHistory }              = useMealHistory()
+  const { history, addToHistory }     = useMealHistory()
+  const { streak, incrementStreak }   = useStreak()
+  const [lastRolled]                  = useState(() => {
+    try {
+      const h = JSON.parse(localStorage.getItem('wte_history')) ?? []
+      return h.length > 0 ? h[0] : null
+    } catch { return null }
+  })
 
   const { imageUrl } = useFoodImage(currentFood)
 
@@ -79,9 +88,10 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'instant' })
       setConfettiKey(k => k + 1)
       addToHistory(food)
+      incrementStreak()
       analytics.resultShown(food, activeFilters)
     }
-  }, [activeFilters, addToHistory])
+  }, [activeFilters, addToHistory, incrementStreak])
 
   const handleRoll = useCallback(() => {
     analytics.rollClicked(activeFilters)
@@ -182,6 +192,16 @@ export default function App() {
 
           {!currentFood && (
             <section className="hero">
+              {streak >= 2 && (
+                <div className="streak-badge">
+                  🔥 {streak} day streak
+                </div>
+              )}
+              {lastRolled && streak < 2 && (
+                <div className="returning-msg">
+                  Back again? Last time you picked {lastRolled.emoji} <strong>{lastRolled.name}</strong>
+                </div>
+              )}
               <h1 className="hero-h1">
                 Not sure what<br />to eat <em>today?</em>
               </h1>
@@ -190,11 +210,13 @@ export default function App() {
           )}
 
           {!currentFood ? (
-            <DiceRoller
-              filteredFoods={filteredFoods}
-              onReveal={handleReveal}
-              onRoll={handleRoll}
-            />
+            <Suspense fallback={<div className="dice-loading" />}>
+              <DiceRoller
+                filteredFoods={filteredFoods}
+                onReveal={handleReveal}
+                onRoll={handleRoll}
+              />
+            </Suspense>
           ) : (
             <>
               <div className="result-col">

@@ -1,52 +1,80 @@
 import { useState, useEffect } from 'react'
 
-const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+const PLACES_KEY = import.meta.env.VITE_GOOGLE_PLACES_KEY
 
-// asks the browser for coordinates — returns null if denied
+const MOCK_RESTAURANTS = [
+  { id: '1', name: 'Golden Bites',   emoji: '🏠', rating: '4.8', distance: '0.4 km', time: '14 min', placeId: null },
+  { id: '2', name: 'The Fork & Co.', emoji: '🍴', rating: '4.6', distance: '0.9 km', time: '22 min', placeId: null },
+  { id: '3', name: 'Street Kitchen', emoji: '🏪', rating: '4.5', distance: '1.3 km', time: '30 min', placeId: null },
+]
+
 function useGeolocation() {
   const [coords, setCoords] = useState(null)
+  const [asked,  setAsked]  = useState(false)
 
   useEffect(() => {
-    if (!navigator.geolocation) return
+    if (!navigator.geolocation) { setAsked(true); return }
     navigator.geolocation.getCurrentPosition(
-      pos => setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      ()  => setCoords(null),   // user said no, or browser blocked it
-      { timeout: 6000 }
+      pos => { setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setAsked(true) },
+      ()  => { setAsked(true) },
+      { timeout: 8000 }
     )
   }, [])
 
-  return coords
+  return { coords, asked }
 }
 
-// fetches nearby restaurants for a given food from our backend
-// returns { restaurants, loading, error }
+function metersToDisplay(meters) {
+  return meters >= 1000
+    ? `${(meters / 1000).toFixed(1)} km`
+    : `${Math.round(meters)} m`
+}
+
+async function fetchPlaces(foodName, lat, lng) {
+  const params = new URLSearchParams({
+    location: `${lat},${lng}`,
+    radius: 2000,
+    keyword: foodName,
+    type: 'restaurant',
+    key: PLACES_KEY,
+  })
+  const res = await fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?${params}`)
+  if (!res.ok) throw new Error(res.status)
+  const data = await res.json()
+  return (data.results ?? []).slice(0, 3).map(p => ({
+    id:       p.place_id,
+    name:     p.name,
+    emoji:    '📍',
+    rating:   p.rating?.toFixed(1) ?? '—',
+    distance: metersToDisplay(p.distance ?? 0),
+    time:     '~20 min',
+    placeId:  p.place_id,
+  }))
+}
+
 export function useNearbyRestaurants(food) {
-  const coords = useGeolocation()
-  const [state, setState] = useState({ restaurants: [], loading: true, error: null })
+  const { coords, asked } = useGeolocation()
+  const [state, setState] = useState({ restaurants: [], loading: true, locationAsked: false })
 
   useEffect(() => {
     if (!food) return
-    if (!coords) {
-      // no location yet — either still asking or user denied; either way show nothing
-      setState({ restaurants: [], loading: !!coords === false, error: null })
+    setState({ restaurants: [], loading: true, locationAsked: asked })
+
+    if (!PLACES_KEY || !coords) {
+      setState({ restaurants: MOCK_RESTAURANTS, loading: false, locationAsked: asked })
       return
     }
 
-    setState(s => ({ ...s, loading: true }))
-
-    const params = new URLSearchParams({ food: food.id, lat: coords.lat, lon: coords.lon })
-    fetch(`${API}/api/restaurants?${params}`)
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => setState({ restaurants: data.restaurants, loading: false, error: null }))
-      .catch(err  => setState({ restaurants: [], loading: false, error: err }))
-  }, [food?.id, coords?.lat, coords?.lon])
+    fetchPlaces(food.name, coords.lat, coords.lng)
+      .then(restaurants => setState({ restaurants, loading: false, locationAsked: true }))
+      .catch(()          => setState({ restaurants: MOCK_RESTAURANTS, loading: false, locationAsked: true }))
+  }, [food?.id, coords?.lat, coords?.lng, asked])
 
   return state
 }
 
-// builds a server-side redirect URL so our backend can log the click before
-// handing the user off to Wolt — works even if the user has an ad blocker
-export function buildOrderUrl(restaurantSlug, restaurantId, foodId, sessionId) {
-  const params = new URLSearchParams({ sessionId, restaurantSlug, restaurantId, food: foodId })
-  return `${API}/api/referral/go?${params}`
+export function buildOrderUrl(foodName, restaurantName) {
+  const q = encodeURIComponent(`${restaurantName} ${foodName}`)
+  const ref = import.meta.env.VITE_WOLT_REF ? `&ref=${import.meta.env.VITE_WOLT_REF}` : ''
+  return `https://wolt.com/en/discovery?q=${q}${ref}`
 }

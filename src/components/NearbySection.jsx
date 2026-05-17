@@ -1,22 +1,19 @@
-// TODO: swap mock data for real data once the backend is wired up:
-//   import { useNearbyRestaurants, buildOrderUrl } from '../hooks/useNearbyRestaurants'
-//   const { restaurants, loading } = useNearbyRestaurants(food)
-//   replace MOCK_RESTAURANTS with `restaurants` and the Order href with buildOrderUrl(...)
+import { useNearbyRestaurants, buildOrderUrl } from '../hooks/useNearbyRestaurants'
 import './NearbySection.css'
 
-const MOCK_RESTAURANTS = [
-  { id: '1', name: 'Golden Bites',   slug: 'golden-bites',   emoji: '🏠', rating: '4.8', distance: '0.4 km', time: '14 min' },
-  { id: '2', name: 'The Fork & Co.', slug: 'the-fork-and-co', emoji: '🍴', rating: '4.6', distance: '0.9 km', time: '22 min' },
-  { id: '3', name: 'Street Kitchen', slug: 'street-kitchen',  emoji: '🏪', rating: '4.5', distance: '1.3 km', time: '30 min' },
-]
+const PLACES_KEY = import.meta.env.VITE_GOOGLE_PLACES_KEY
 
 export default function NearbySection({ food }) {
+  const { restaurants, loading } = useNearbyRestaurants(food)
+
+  if (loading) return null
+
   return (
     <div className="nearby">
       <div className="nearby-head">
         <span className="nearby-dot" />
         <span className="nearby-title">Available near you</span>
-        <span className="nearby-badge">Coming soon</span>
+        {!PLACES_KEY && <span className="nearby-badge">Demo data</span>}
       </div>
 
       <p className="nearby-sub">
@@ -24,8 +21,8 @@ export default function NearbySection({ food }) {
       </p>
 
       <div className="nearby-list">
-        {MOCK_RESTAURANTS.map(r => (
-          <div key={r.name} className="nearby-item">
+        {restaurants.map(r => (
+          <div key={r.id} className="nearby-item">
             <div className="nearby-icon">{r.emoji}</div>
             <div className="nearby-info">
               <div className="nearby-name">{r.name}</div>
@@ -37,8 +34,12 @@ export default function NearbySection({ food }) {
                 <span>🕐 {r.time}</span>
               </div>
             </div>
-            {/* href will become buildOrderUrl(r.slug, r.id, food.id, sessionId) */}
-            <a className="nearby-order" href={`https://wolt.com`} target="_blank" rel="noopener noreferrer">
+            <a
+              className="nearby-order"
+              href={buildOrderUrl(food.name, r.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Order
             </a>
           </div>

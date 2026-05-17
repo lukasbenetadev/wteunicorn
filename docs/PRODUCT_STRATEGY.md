@@ -133,7 +133,7 @@ RETURNING USER
 ```
 
 **Key UX principles:**
-- Animation must feel like a dice roll, not a spinner
+- Animation is a **3D dice roll under theater curtains** (Three.js) — not a spinner
 - Result copy is written by a human, not a template
 - "I'd order this" captures delivery intent before you have a partner
 - Share button generates a card, not just a link
@@ -144,39 +144,46 @@ RETURNING USER
 ## 6. Feature Roadmap
 
 ### MVP (built)
-- Roll button with slot machine animation
-- Mood/vibe filter (1 tap)
+- Roll button with **3D dice roll under theater curtains** (Three.js + React Three Fiber)
+- Mood/vibe filter (1 tap) — collapsible via ⚙ button on mobile
 - Exclusion filters (vegetarian, no spicy, no meat, etc.)
 - Result card with emotional description copy
-- "I'd order this" and "I'd cook this" intent buttons
+- "I'd order this" → **opens Wolt with dish pre-searched** (`@capacitor/browser`)
+- "I'd cook this" intent button
 - Save / favorites (localStorage)
 - Share (Web Share API + clipboard fallback)
 - Meal history (last 10 rolls, localStorage)
 - PostHog analytics (11 events tracked)
+- **Native iOS app** (Capacitor) — Android ready for colleague
+- Mobile-first layout: fixed header with safe area, scroll-to-top on reveal
 
-### V2 (after 1,000 users)
-- Location-aware restaurant suggestions (Wolt deep links or Google Maps fallback)
-- Meal streak counter
-- Weekly recap card (shareable image)
+### V2 (next — build before 1,000 users)
+- ✅ **Meal streak counter** — 🔥 N day streak badge, resets on missed day, localStorage
+- **Location-aware nearby restaurants** — Google Places API replacing "Coming Soon"
+- Returning user experience — "Back again? Last time you picked Ramen."
+- Wolt affiliate ref code appended to deep link (apply at wolt.com/en/business)
+
+### V3 (after 1,000 users)
+- Shareable result image card (9:16 Instagram Stories format)
+- Weekly recap card (shareable, branded)
 - City-based "most popular this week" widget
-- "Cook it" mode — links to recipe (SEO play)
-- PWA / Add to Home Screen prompt
 - "Try something different" nudge after repeated similar picks
+- "Cook it" mode — links to recipe (SEO play)
+- UTM tracking on all Wolt deep links per dish per city
+
+### V4 (partnership-ready)
+- User accounts + OAuth login (Supabase — Google, Apple, Email)
+- Favourites + history synced to cloud
+- i18n: Lithuanian + major European languages
+- Restaurant "featured" placement slot (clearly labeled)
+- Click-to-order handoff with server-side redirect logging
 
 ### Do NOT build yet
-- User accounts / login
 - Social features / follow friends
 - Full restaurant menus or delivery integration
 - Push notifications
 - AI meal generation
-- Subscription or paywall of any kind
-- Native mobile app
-
-### Partnership-ready features (V3)
-- Location permission + nearby restaurant feed (live data)
-- Affiliate click tracking per dish per city with UTM parameters
-- Restaurant "featured" placement slot (clearly labeled)
-- Click-to-order handoff with server-side redirect logging
+- Subscription or paywall of any kind (wait for user base)
 
 ---
 
@@ -312,13 +319,14 @@ One screen. One button. One beautiful result. Emotional copy. Roll again. Save. 
 **Build order:**
 1. ✅ Roll mechanic with weighted mood logic
 2. ✅ Result card with emotional copy per dish
-3. ✅ "I'd order this" intent button with tracking
+3. ✅ "I'd order this" → Wolt deep link + analytics tracking
 4. ✅ Save + share
 5. ✅ Basic filters (mood, diet exclusion)
 6. ✅ Analytics (every event from day one)
-7. 🔜 Streak + meal history UI
-8. 🔜 Location-aware restaurant results
-9. 🔜 Shareable result image card
+7. ✅ Native iOS app (Capacitor) + mobile-first layout
+8. ✅ Streak counter — 🔥 badge above hero headline, consecutive-day logic
+9. 🔜 Location-aware restaurant results (Google Places)
+10. 🔜 Shareable result image card
 
 **Avoid:**
 Login, push notifications, AI generation, restaurant menus, anything that adds a screen before the first roll.
