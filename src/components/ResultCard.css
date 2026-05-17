@@ -16,7 +16,7 @@
 /* ── Media (image or emoji) ── */
 .rcard-media {
   position: relative;
-  height: 190px;
+  height: 130px;
   background: var(--bg-raised);
   overflow: hidden;
 }
@@ -31,7 +31,7 @@
   to   { opacity: 1; transform: none; }
 }
 .rcard-emoji {
-  font-size: 80px;
+  font-size: 62px;
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -210,5 +210,5 @@
 
 /* ── Responsive ── */
 @media (max-width: 840px) {
-  .rcard-media { height: 170px; }
+  .rcard-media { height: 130px; }
 }

@@ -27,10 +27,11 @@ function useLocalStorage(key, initial) {
 }
 
 export default function App() {
-  const [moods,       setMoods]       = useState(new Set())
-  const [excluded,    setExcluded]    = useState(new Set())
-  const [currentFood, setCurrentFood] = useState(null)
-  const [confettiKey, setConfettiKey] = useState(0)
+  const [moods,           setMoods]           = useState(new Set())
+  const [excluded,        setExcluded]        = useState(new Set())
+  const [currentFood,     setCurrentFood]     = useState(null)
+  const [confettiKey,     setConfettiKey]     = useState(0)
+  const [showFilters,     setShowFilters]     = useState(false)
   const [favorites,   setFavorites]   = useLocalStorage('wte_favorites', [])
   const { addToHistory }              = useMealHistory()
 
@@ -75,6 +76,7 @@ export default function App() {
   const handleReveal = useCallback(food => {
     setCurrentFood(food)
     if (food) {
+      window.scrollTo({ top: 0, behavior: 'instant' })
       setConfettiKey(k => k + 1)
       addToHistory(food)
       analytics.resultShown(food, activeFilters)
@@ -88,6 +90,7 @@ export default function App() {
   const handleAgain = useCallback(() => {
     analytics.rerollClicked(activeFilters)
     setCurrentFood(null)
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }, [activeFilters])
 
   const isFaved = currentFood ? favorites.some(f => f.id === currentFood.id) : false
@@ -130,11 +133,21 @@ export default function App() {
             <span className="logo-icon">🍽️</span>
             <span className="logo-text">What<em>To</em>Eat</span>
           </div>
+          {!currentFood && (
+            <button
+              className="hdr-filter-btn"
+              onClick={() => setShowFilters(v => !v)}
+              aria-expanded={showFilters}
+            >
+              <span className="hdr-filter-icon">⚙</span>
+              {(moods.size > 0 || excluded.size > 0) && <span className="hdr-filter-dot" />}
+            </button>
+          )}
         </div>
       </header>
 
       {/* ── Body: sidebar + content ── */}
-      <div className="app-body">
+      <div className={`app-body${currentFood ? ' app-body--result' : ''}`}>
 
         {/* Left sidebar — filters + saved favourites */}
         <aside className="app-sidebar">
@@ -155,12 +168,26 @@ export default function App() {
         {/* Main content */}
         <div className="app-content">
 
-          <section className="hero">
-            <h1 className="hero-h1">
-              Not sure what<br />to eat <em>today?</em>
-            </h1>
-            <p className="hero-sub">Tap the stage and let us pick a dish for you.</p>
-          </section>
+          {/* Mobile inline filter panel */}
+          {!currentFood && showFilters && (
+            <div className="mobile-filter-panel">
+              <FilterBar
+                moods={moods}
+                toggleMood={toggleMood}
+                excluded={excluded}
+                toggleExclude={toggleExclude}
+              />
+            </div>
+          )}
+
+          {!currentFood && (
+            <section className="hero">
+              <h1 className="hero-h1">
+                Not sure what<br />to eat <em>today?</em>
+              </h1>
+              <p className="hero-sub">Tap the stage and let us pick a dish for you.</p>
+            </section>
+          )}
 
           {!currentFood ? (
             <DiceRoller

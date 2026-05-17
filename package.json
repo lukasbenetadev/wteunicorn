@@ -8,9 +8,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^7.6.5",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "posthog-js": "^1.372.9",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

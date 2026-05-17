@@ -6,6 +6,11 @@
   gap: 20px;
 }
 
+.roller-wrap--fullscreen {
+  position: relative;
+  width: 100%;
+}
+
 /* theater stage */
 .stage {
   position: relative;
@@ -28,6 +33,54 @@
   transition: box-shadow 0.3s ease;
 }
 
+.stage--fullscreen {
+  width: min(1100px, 100%);
+  height: min(70vh, 680px);
+}
+
+.stage--overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  z-index: 9999;
+  border: none;
+  box-shadow: none;
+}
+
+.stage--overlay.stage--clickable:hover {
+  box-shadow: none;
+}
+
+.stage--overlay.stage--clickable:active {
+  transform: none;
+}
+
+.three-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.three-stage canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.stage-idle--overlay,
+.stage-rolling--overlay,
+.stage-reveal--overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .stage--clickable { cursor: pointer; }
 .stage--clickable:hover {
   box-shadow:
@@ -37,60 +90,108 @@
 }
 .stage--clickable:active { transform: scale(0.99); }
 
-/* curtains */
+/* ── Theater valance (top drape bar) ── */
+.theater-valance {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: linear-gradient(
+    to bottom,
+    #0e0203 0%,
+    #3a080b 50%,
+    #6b1217 100%
+  );
+  z-index: 22;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.55);
+}
+
+/* ── Curtains ── */
 .curtain {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 52%;
-  z-index: 20;
-  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 54%;
+  z-index: 21;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
-/* Fabric texture */
+/* Fabric fold texture */
 .curtain::before {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,0.06) 0px,
-      rgba(0,0,0,0.07) 6px,
-      rgba(255,255,255,0.04) 12px,
-      rgba(0,0,0,0.05) 18px,
-      rgba(255,255,255,0.07) 24px
-    );
+  z-index: 1;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent                   0px,
+    rgba(255,255,255,0.035)        4px,
+    rgba(0,0,0,0.13)               9px,
+    rgba(255,255,255,0.025)       14px,
+    rgba(0,0,0,0.09)              20px,
+    rgba(255,255,255,0.04)        25px,
+    rgba(0,0,0,0.11)              30px,
+    rgba(255,255,255,0.03)        35px,
+    transparent                   40px
+  );
 }
 
-/* Fabric sheen */
+/* Vertical sheen/light */
 .curtain::after {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: linear-gradient(
     180deg,
-    rgba(255,255,255,0.12) 0%,
-    rgba(0,0,0,0.05) 30%,
-    rgba(255,255,255,0.08) 60%,
-    rgba(0,0,0,0.1) 100%
+    rgba(255,255,255,0.18) 0%,
+    rgba(255,255,255,0.04) 20%,
+    rgba(0,0,0,0.05)       50%,
+    rgba(255,255,255,0.06) 70%,
+    rgba(0,0,0,0.14)       100%
   );
 }
 
 .curtain--left {
   left: 0;
-  background: linear-gradient(to right, #7B1316 0%, #B03030 40%, #C0392B 100%);
   transform: translateX(-105%);
-  border-radius: 0 0 0 24px;
-  box-shadow: inset -4px 0 12px rgba(0,0,0,0.2);
+  background: linear-gradient(
+    to right,
+    #1e0305 0%,
+    #4a0c0f 10%,
+    #7b1316 22%,
+    #5e0f12 34%,
+    #902020 46%,
+    #5e0f12 58%,
+    #7b1316 70%,
+    #4a0c0f 82%,
+    #2a0608 92%,
+    #1e0305 100%
+  );
+  box-shadow: inset -6px 0 20px rgba(0,0,0,0.35), 5px 0 20px rgba(0,0,0,0.4);
 }
+
 .curtain--right {
   right: 0;
-  background: linear-gradient(to left, #7B1316 0%, #B03030 40%, #C0392B 100%);
   transform: translateX(105%);
-  border-radius: 0 0 24px 0;
-  box-shadow: inset 4px 0 12px rgba(0,0,0,0.2);
+  background: linear-gradient(
+    to left,
+    #1e0305 0%,
+    #4a0c0f 10%,
+    #7b1316 22%,
+    #5e0f12 34%,
+    #902020 46%,
+    #5e0f12 58%,
+    #7b1316 70%,
+    #4a0c0f 82%,
+    #2a0608 92%,
+    #1e0305 100%
+  );
+  box-shadow: inset 6px 0 20px rgba(0,0,0,0.35), -5px 0 20px rgba(0,0,0,0.4);
 }
+
 .curtain--left.curtain--in  { transform: translateX(0); }
 .curtain--right.curtain--in { transform: translateX(0); }
 
@@ -275,6 +376,8 @@
 /* responsive */
 @media (max-width: 860px) {
   .stage       { width: 320px; height: 260px; }
+  .stage--fullscreen { width: 100%; height: min(60vh, 520px); }
+  .stage--overlay { width: 100vw; height: 100vh; }
   .reel-window { width: 130px; height: 130px; }
   .reel-emoji  { font-size: 72px; }
   .stage-reveal-emoji { font-size: 58px; }
